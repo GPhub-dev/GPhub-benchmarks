@@ -1,2 +1,2 @@
-# GPhub-benchmarks
+# GPhub-kit-benchmarks
 
