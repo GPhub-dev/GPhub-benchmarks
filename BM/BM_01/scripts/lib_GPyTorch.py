@@ -43,16 +43,13 @@ class GPyTorchLibrary(PythonGPLibrary):
             ) -> None:
                 """Initialize the GP model."""
                 super(ExactGPModel, self).__init__(train_x, train_y, likelihood)  # noqa: UP008
-                # Constant mean for smooth function
+                # Constant mean
                 self.mean_module = gpytorch.means.ConstantMean()
-                # Matérn 5/2 kernel with output scale (ScaleKernel)
+                # RBF Kernel
                 self.covar_module = gpytorch.kernels.ScaleKernel(
-                    gpytorch.kernels.MaternKernel(
-                        nu=2.5,  # Matérn 5/2 for smooth functions
+                    gpytorch.kernels.RBFKernel(
                         ard_num_dims=1,
-                        lengthscale_prior=gpytorch.priors.GammaPrior(2.0, 0.5),
                     ),
-                    outputscale_prior=gpytorch.priors.GammaPrior(2.0, 0.15),
                 )
 
             def forward(self, x: torch.Tensor) -> MultivariateNormal:

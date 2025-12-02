@@ -25,7 +25,7 @@ class SKLearnLibrary(PythonGPLibrary):
         kernel = gpx.kernels.RBF(
             lengthscale=0.25,
         )
-        mean = gpx.mean_functions.Zero()
+        mean = gpx.mean_functions.Constant()
 
         # Prior
         prior = gpx.gps.Prior(kernel=kernel, mean_function=mean)
