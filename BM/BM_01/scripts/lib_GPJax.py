@@ -10,8 +10,8 @@ from gphubkit.launcher.executor import PythonGPLibrary
 config.update("jax_enable_x64", True)
 
 
-class SKLearnLibrary(PythonGPLibrary):
-    """scikit-learn Library."""
+class GPJaxLibrary(PythonGPLibrary):
+    """GPJax Library."""
 
     def __init__(self, train_x: np.ndarray, train_y: np.ndarray) -> None:
         """GPR model."""
@@ -21,18 +21,17 @@ class SKLearnLibrary(PythonGPLibrary):
 
         self.D = gpx.Dataset(X=train_x_jnp, y=train_y_jnp)
 
-        # Define kernel and mean
-        kernel = gpx.kernels.RBF(
-            lengthscale=0.25,
-        )
+        # Define kernel and mean - kernel params will be optimized
+        kernel = gpx.kernels.RBF()
         mean = gpx.mean_functions.Constant()
 
         # Prior
         prior = gpx.gps.Prior(kernel=kernel, mean_function=mean)
 
-        # Likelihood with matched nugget/alpha term
+        # Likelihood with small noise for numerical stability
         likelihood = gpx.likelihoods.Gaussian(
             num_datapoints=self.D.n,
+            obs_stddev=jnp.array(1e-5),
         )
         # Posterior
         self.posterior = prior * likelihood
@@ -43,31 +42,18 @@ class SKLearnLibrary(PythonGPLibrary):
             model=self.posterior,
             objective=lambda p, d: -gpx.objectives.conjugate_mll(p, d),  # type: ignore
             train_data=self.D,
-            max_iters=1000,  # Match n_restarts_optimizer
+            max_iters=1000,
             verbose=False,
         )
 
     def predict(self, test_x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """Predict the values and variances of the model."""
         test_x_jnp = jnp.array(test_x)
-        batch_size = 1000
-        n_test = len(test_x_jnp)
 
-        pred_means = []
-        pred_stds = []
+        # Use JIT-compiled prediction function
+        latent_dist = self.opt_posterior.predict(test_x_jnp, train_data=self.D)
+        predictive_dist = self.opt_posterior.likelihood(latent_dist)
 
-        @jit
-        def predict_fn(x: np.ndarray) -> tuple[jnp.ndarray, jnp.ndarray]:
-            latent_dist = self.opt_posterior.predict(x, train_data=self.D)
-            predictive_dist = self.opt_posterior.likelihood(latent_dist)
-            return predictive_dist.mean(), predictive_dist.stddev()
-
-        for i in range(0, n_test, batch_size):
-            batch_x = test_x_jnp[i : min(i + batch_size, n_test)]
-            batch_mean, batch_std = predict_fn(batch_x)
-            pred_means.append(np.array(batch_mean))
-            pred_stds.append(np.array(batch_std))
-
-        pred_y = np.concatenate(pred_means)
-        pred_var = np.concatenate(pred_stds)
+        pred_y = np.array(predictive_dist.mean()).flatten()
+        pred_var = np.array(predictive_dist.variance()).flatten()
         return pred_y, pred_var
