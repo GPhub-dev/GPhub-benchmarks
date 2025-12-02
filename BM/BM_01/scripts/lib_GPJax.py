@@ -1,6 +1,6 @@
 """Benchmark - GPJax library."""
 
-from jax import jit, config
+from jax import config
 import gpjax as gpx
 import numpy as np
 import jax.numpy as jnp
