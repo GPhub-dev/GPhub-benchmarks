@@ -2,7 +2,7 @@
 
 
 
-@Main.pdf is the journal paper I wrote. Now I have to conduct the experiments of section "4.3 Design of the benchmarks" and "4.4 Synthetic datasets of analytical test functions." I implemented the gphubkit toolkit in @src/gphubkit/, and the benchmarks on the analytical functions must be implemented in @benchmarks/BM . Help me to implement the GaussianProcessesjl package script (see for example, for benchmark 1, i.e. BM_01: @benchmarks/BM/BM_01/scripts ). Let's start from benchmark BM_01. You can run the whole experiment by using the shell command: source .venv/bin/activate; cd benchmarks/BM/BM_01; gphubkit run bm --id 1. Check then the log file in @benchmarks/BM/BM_01/results/logger.log for debug.
+@Main.pdf is the journal paper I wrote. Now I have to conduct the experiments of section "4.3 Design of the benchmarks" and "4.4 Synthetic datasets of analytical test functions." I implemented the gphubkit toolkit in @src/gphubkit/, and the benchmarks on the analytical functions must be implemented in @benchmarks/BM . Help me to implement the GaussianProcessesjl package script (see for example, for benchmark 1, i.e. BM_01: @benchmarks/BM/BM_01/scripts ). Let's start from benchmark BM_01. You can run the whole experiment by using the shell command: source .venv/bin/activate; cd benchmarks/BM/BM_02; gphubkit run bm --id 2. Check then the log file in @benchmarks/BM/BM_01/results/logger.log for debug.
 
 Check the results of benchmark BM_01. All the packages behave similarly except GPJax and GPyTorch, see the .png results in @benchmarks/BM/BM_01/results/img/ . Modify in
   @benchmarks/BM/BM_1/scripts GPJax and GPyTorch scripts to match the behaviour of the others

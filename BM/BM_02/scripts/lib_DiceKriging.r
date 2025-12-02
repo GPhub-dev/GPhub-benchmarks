@@ -8,11 +8,13 @@ switch(ACTION,
     train_x <<- as.matrix(train_x)
     train_y <<- as.numeric(train_y)
     test_x <<- as.matrix(test_x)
+    # Set dimensionality for 2D input
+    d <<- ncol(train_x)  # d = 2 for BM_02
   },
   "train" = {
     # TRAINING
     model <<- km(
-      formula = ~1, # Zero trend (~1 for constant trend)
+      formula = ~1, # Constant trend
       design = train_x,
       response = train_y,
       covtype = "gauss", # Squared exponential covariance
