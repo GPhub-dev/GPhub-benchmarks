@@ -19,5 +19,7 @@ elseif ACTION == "train"
     optimize!(gp; method=ConjugateGradient())
 
 elseif ACTION == "test"
-    global pred_y, pred_var = predict_y(gp, test_x')
+    pred_y_tmp, pred_var_tmp = predict_y(gp, test_x')
+    global pred_y = pred_y_tmp
+    global pred_var = pred_var_tmp
 end

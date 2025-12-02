@@ -5,7 +5,7 @@ switch ACTION
         % INITIALIZE STK
         addpath('~/Documents/MATLAB/stk')
         startup
-        DIM = 2;
+        DIM = 1;
         model = stk_model(@stk_gausscov_aniso, DIM);
         model.lm = stk_lm_constant;
         model.lognoisevariance = 2 * log (1e-4);  % Noise std = 1e-4 (small)
