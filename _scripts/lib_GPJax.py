@@ -10,8 +10,8 @@ from gphubkit.launcher.executor import PythonGPLibrary
 config.update("jax_enable_x64", True)
 
 
-class SKLearnLibrary(PythonGPLibrary):
-    """scikit-learn Library."""
+class GPJaxLibrary(PythonGPLibrary):
+    """GPJaxLibrary Library."""
 
     def __init__(self, train_x: np.ndarray, train_y: np.ndarray) -> None:
         """GPR model."""
