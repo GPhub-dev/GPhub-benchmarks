@@ -12,8 +12,9 @@ class GPyLibrary(PythonGPLibrary):
 
     def __init__(self, train_x: np.ndarray, train_y: np.ndarray) -> None:
         """GPR model."""
-        kernel = GPy.kern.RBF(input_dim=2)
-        gp_gpy = GPyGPRegression(train_x, train_y.reshape(-1, 1), kernel=kernel, noise_var=1e-5)
+        # Gaussian/SE kernel with ARD (8 length scales for 8D)
+        kernel = GPy.kern.RBF(input_dim=8, ARD=True)
+        gp_gpy = GPyGPRegression(train_x, train_y.reshape(-1, 1), kernel=kernel, noise_var=1e-8)
         gp_gpy.optimize_restarts(
             num_restarts=30,
             optimizer="bfgs",

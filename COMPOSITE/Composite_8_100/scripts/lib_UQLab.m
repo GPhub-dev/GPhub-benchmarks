@@ -7,8 +7,8 @@ switch ACTION
         MetaOpts.Type = 'Metamodel';
         MetaOpts.MetaType = 'Kriging';
         MetaOpts.Trend.Type = 'ordinary';
-        MetaOpts.Corr.Family = 'Gaussian';
-        MetaOpts.Corr.Nugget = 1e-10;
+        MetaOpts.Corr.Family = 'Gaussian';  % SE/Gaussian kernel
+        MetaOpts.Corr.Nugget = 1e-8;  % small fixed nugget
         MetaOpts.ExpDesign.X = train_x;
         MetaOpts.ExpDesign.Y = train_y;
         MetaOpts.EstimMethod = 'ML';

@@ -11,6 +11,7 @@ class EGOboxLibrary(PythonGPLibrary):
 
     def __init__(self, train_x: np.ndarray, train_y: np.ndarray) -> None:
         """GPR model."""
+        # Gaussian/SE kernel with constant mean (EGObox handles ARD automatically)
         self.gp_model = egx.Gpx.builder(  # type: ignore
             regr_spec=egx.RegressionSpec.CONSTANT,  # type: ignore
             corr_spec=egx.CorrelationSpec.SQUARED_EXPONENTIAL,  # type: ignore
