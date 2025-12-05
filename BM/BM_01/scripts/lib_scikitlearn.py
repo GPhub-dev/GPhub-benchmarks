@@ -1,7 +1,8 @@
 """Benchmark - scikit-learn library."""
 
 from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
+from sklearn.gaussian_process.kernels import RBF
+from sklearn.gaussian_process.kernels import ConstantKernel as C
 import numpy as np
 
 from gphubkit.launcher.executor import PythonGPLibrary

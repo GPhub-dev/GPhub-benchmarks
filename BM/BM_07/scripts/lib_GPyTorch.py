@@ -9,18 +9,30 @@ from gphubkit.launcher.executor import PythonGPLibrary
 
 
 class GPyTorchLibrary(PythonGPLibrary):
-    """GPyTorch Library."""
+    """GPyTorch Library for BM_07 (Morris 20D)."""
 
     def __init__(self, train_x: np.ndarray, train_y: np.ndarray) -> None:
         """GPR model."""
-        # Convert to PyTorch tensor
-        train_x_tensor = torch.tensor(train_x, dtype=torch.float32).squeeze()
-        train_y_tensor = torch.tensor(train_y, dtype=torch.float32).squeeze()
+        # Normalize inputs
+        self._x_mean = train_x.mean(axis=0)
+        self._x_std = train_x.std(axis=0)
+        self._x_std[self._x_std == 0] = 1.0
+        train_x_norm = (train_x - self._x_mean) / self._x_std
+
+        # Normalize target
+        self._y_mean = train_y.mean()
+        self._y_std = train_y.std()
+        if self._y_std == 0:
+            self._y_std = 1.0
+        train_y_norm = (train_y - self._y_mean) / self._y_std
+
+        train_x_tensor = torch.tensor(train_x_norm, dtype=torch.float64).squeeze()
+        train_y_tensor = torch.tensor(train_y_norm, dtype=torch.float64).squeeze()
         self._train_x_tensor = train_x_tensor
         self._train_y_tensor = train_y_tensor
 
         class ExactGPModel(gpytorch.models.ExactGP):
-            """Exact Gaussian Process model."""
+            """Exact Gaussian Process model for BM_07."""
 
             def __init__(
                 self,
@@ -28,15 +40,16 @@ class GPyTorchLibrary(PythonGPLibrary):
                 train_y: torch.Tensor,
                 likelihood: gpytorch.likelihoods.GaussianLikelihood,
             ) -> None:
-                """Initialize the model."""
+                """Initialize the GP model."""
                 super(ExactGPModel, self).__init__(train_x, train_y, likelihood)  # noqa: UP008
-                self.mean_module = gpytorch.means.ZeroMean()
+                # Constant mean
+                self.mean_module = gpytorch.means.ConstantMean()
+                # Matérn 5/2 Kernel with ARD (20 length scales for 20D)
                 self.covar_module = gpytorch.kernels.ScaleKernel(
-                    gpytorch.kernels.RBFKernel(
-                        ard_num_dims=1,
-                        lengthscale_prior=gpytorch.priors.NormalPrior(0.25, 0.01),  # Initialize length scale to 0.25
+                    gpytorch.kernels.MaternKernel(
+                        nu=2.5,
+                        ard_num_dims=20,
                     ),
-                    lengthscale_constraint=gpytorch.constraints.Interval(1e-6, 1e6),  # type: ignore
                 )
 
             def forward(self, x: torch.Tensor) -> MultivariateNormal:
@@ -45,22 +58,18 @@ class GPyTorchLibrary(PythonGPLibrary):
                 covar_x = self.covar_module(x)
                 return MultivariateNormal(mean_x, covar_x)  # type: ignore
 
-        noise_term = 1e-10
-        noise_constraint = gpytorch.constraints.GreaterThan(noise_term)  # type: ignore 1e-1 * noise_term
-
+        # Allow estimation of nugget (remove strict prior)
         likelihood = gpytorch.likelihoods.GaussianLikelihood(
-            noise_constraint=noise_constraint,
-            noise_prior=gpytorch.priors.NormalPrior(noise_term, noise_term),
+            noise_constraint=gpytorch.constraints.GreaterThan(1e-10)
         )
-        likelihood.initialize(noise=noise_term)
-        # likelihood.noise_covar.raw_noise.requires_grad_(False)
+        likelihood.initialize(noise=1e-4)
 
         model = ExactGPModel(train_x_tensor, train_y_tensor, likelihood)
 
-        # Training configuration
         optimizer = torch.optim.LBFGS(
             model.parameters(),
             max_iter=1000,
+            line_search_fn="strong_wolfe",
         )
         self.gp_model = model
         self.likelihood = likelihood
@@ -83,12 +92,14 @@ class GPyTorchLibrary(PythonGPLibrary):
 
     def predict(self, test_x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """Predict the values and variances of the model."""
-        test_x_tensor = torch.tensor(test_x, dtype=torch.float32).squeeze()
+        test_x_norm = (test_x - self._x_mean) / self._x_std
+        test_x_tensor = torch.tensor(test_x_norm, dtype=torch.float64).squeeze()
+        
         self.gp_model.eval()
         self.likelihood.eval()
         # Make predictions by feeding model through likelihood
         with torch.no_grad(), gpytorch.settings.fast_pred_var():
             observed_pred = self.likelihood(self.gp_model(test_x_tensor))
-            pred_y = observed_pred.mean
-            pred_var = observed_pred.variance
-        return pred_y.numpy(), pred_var.numpy()
+            pred_y = observed_pred.mean.numpy() * self._y_std + self._y_mean
+            pred_var = observed_pred.variance.numpy() * (self._y_std**2)
+        return pred_y, pred_var
