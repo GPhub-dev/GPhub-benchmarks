@@ -5,8 +5,8 @@ switch ACTION
         % INITIALIZE STK
         addpath('~/Documents/MATLAB/stk')
         startup
-        DIM = 2;
-        model = stk_model(@stk_gausscov_aniso, DIM);
+        DIM = 8;  % 8D for Borehole
+        model = stk_model(@stk_materncov52_aniso, DIM);  % Matérn 5/2 with ARD
         model.lm = stk_lm_constant;
         model.lognoisevariance = 2 * log (1e-4);  % Noise std = 1e-4 (small)
         param0 = stk_param_init (model, train_x, train_y);
