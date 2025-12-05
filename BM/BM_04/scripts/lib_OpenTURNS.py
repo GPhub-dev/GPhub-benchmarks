@@ -18,9 +18,9 @@ class OpenTURNSLibrary(PythonGPLibrary):
 
         # Define basis and covariance model
         basis = ot.ConstantBasisFactory(train_x_ot.getDimension()).build()
-        scale = [0.1] * train_x_ot.getDimension()
+        scale = [0.1] * train_x_ot.getDimension()  # ARD: 3 length scales for 3D
         amplitude = [0.1]
-        kernel = ot.SquaredExponential(scale, amplitude)
+        kernel = ot.SquaredExponential(scale, amplitude)  # Gaussian/SE kernel
 
         # Create Kriging algorithm
         self.gp_model = ot.KrigingAlgorithm(train_x_ot, train_y_ot, kernel, basis)

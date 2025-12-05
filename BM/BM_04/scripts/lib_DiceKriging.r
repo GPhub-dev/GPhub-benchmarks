@@ -8,15 +8,17 @@ switch(ACTION,
     train_x <<- as.matrix(train_x)
     train_y <<- as.numeric(train_y)
     test_x <<- as.matrix(test_x)
+    # Set dimensionality for 3D input (Dette-Pepelyshev)
+    d <<- ncol(train_x)  # d = 3 for BM_04
   },
   "train" = {
     # TRAINING
     model <<- km(
-      formula = ~1, # Zero trend (~1 for constant trend)
+      formula = ~1, # Constant trend
       design = train_x,
       response = train_y,
-      covtype = "gauss", # Squared exponential covariance
-      nugget = 1e-10,
+      covtype = "gauss", # Gaussian/SE covariance
+      nugget = 1e-8,
       optim.method = "BFGS",
       control = list(trace = FALSE) # Suppress optimization output
     )

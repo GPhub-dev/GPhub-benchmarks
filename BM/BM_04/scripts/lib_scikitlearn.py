@@ -1,7 +1,7 @@
 """Benchmark - scikit-learn library."""
 
 from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF
+from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 import numpy as np
 
 from gphubkit.launcher.executor import PythonGPLibrary
@@ -12,14 +12,13 @@ class SKLearnLibrary(PythonGPLibrary):
 
     def __init__(self, train_x: np.ndarray, train_y: np.ndarray) -> None:
         """GPR model."""
-        # Create Kriging algorithm
-        kernel = RBF(length_scale=0.1)
+        # Create Kriging algorithm with Gaussian/SE kernel and ARD (3 length scales for 3D)
+        kernel = C(1.0, (1e-3, 1e3)) * RBF(length_scale=[0.1, 0.1, 0.1], length_scale_bounds=(1e-3, 1e3))
         self.gp_model = GaussianProcessRegressor(
             kernel=kernel,
-            n_restarts_optimizer=100,
-            # optimizer="fmin_l_bfgs_b",
-            # alpha=1e-13,  # nugget
-            # normalize_y=True,
+            n_restarts_optimizer=10,
+            alpha=1e-8,  # small nugget for numerical stability
+            normalize_y=True,  # helps with convergence
         )
         self._train_x = train_x
         self._train_y = train_y
