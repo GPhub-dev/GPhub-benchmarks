@@ -5,8 +5,8 @@ switch ACTION
         % INITIALIZE STK
         addpath('~/Documents/MATLAB/stk')
         startup
-        DIM = 2;
-        model = stk_model(@stk_gausscov_aniso, DIM);
+        DIM = 6;  % 6D for OTL Circuit
+        model = stk_model(@stk_gausscov_aniso, DIM);  % Gaussian/SE with ARD
         model.lm = stk_lm_constant;
         model.lognoisevariance = 2 * log (1e-4);  % Noise std = 1e-4 (small)
         param0 = stk_param_init (model, train_x, train_y);
