@@ -24,6 +24,7 @@ class OpenTURNSLibrary(PythonGPLibrary):
 
         # Create Kriging algorithm
         self.gp_model = ot.KrigingAlgorithm(train_x_ot, train_y_ot, kernel, basis)
+        self.gp_model.setNoise([1e-8] * train_x_ot.getSize())  # nugget
 
     def train(self) -> None:
         """Train the model."""

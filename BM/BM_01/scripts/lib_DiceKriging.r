@@ -16,7 +16,7 @@ switch(ACTION,
       design = train_x,
       response = train_y,
       covtype = "gauss", # Squared exponential covariance
-      nugget = 1e-10,
+      nugget = 1e-8,
       optim.method = "BFGS",
       control = list(trace = FALSE) # Suppress optimization output
     )

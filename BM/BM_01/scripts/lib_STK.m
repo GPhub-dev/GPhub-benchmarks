@@ -8,7 +8,7 @@ switch ACTION
         DIM = 1;
         model = stk_model(@stk_gausscov_aniso, DIM);
         model.lm = stk_lm_constant;
-        model.lognoisevariance = 2 * log (1e-4);  % Noise std = 1e-4 (small)
+        model.lognoisevariance = log(1e-8);  % Nugget variance = 1e-8
         param0 = stk_param_init (model, train_x, train_y);
     case 'train'
         % TRAINING

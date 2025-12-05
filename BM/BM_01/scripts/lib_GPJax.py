@@ -33,7 +33,7 @@ class GPJaxLibrary(PythonGPLibrary):
         # Likelihood with small noise for numerical stability
         likelihood = gpx.likelihoods.Gaussian(
             num_datapoints=self.D.n,
-            # obs_stddev=jnp.array(1e-5),
+            obs_stddev=jnp.array(1e-4),  # nugget: variance = 1e-8
         )
         # Posterior
         self.posterior = prior * likelihood
@@ -66,20 +66,20 @@ class GPJaxLibrary(PythonGPLibrary):
         n_test = len(test_x_jnp)
 
         pred_means = []
-        pred_stds = []
+        pred_vars = []
 
         @jit
         def predict_fn(x: np.ndarray) -> tuple[jnp.ndarray, jnp.ndarray]:
             latent_dist = self.opt_posterior.predict(x, train_data=self.D)
             predictive_dist = self.opt_posterior.likelihood(latent_dist)
-            return predictive_dist.mean(), predictive_dist.stddev()
+            return predictive_dist.mean(), predictive_dist.variance()
 
         for i in range(0, n_test, batch_size):
             batch_x = test_x_jnp[i : min(i + batch_size, n_test)]
-            batch_mean, batch_std = predict_fn(batch_x)
+            batch_mean, batch_var = predict_fn(batch_x)
             pred_means.append(np.array(batch_mean))
-            pred_stds.append(np.array(batch_std))
+            pred_vars.append(np.array(batch_var))
 
         pred_y = np.concatenate(pred_means)
-        pred_var = np.concatenate(pred_stds)
+        pred_var = np.concatenate(pred_vars)
         return pred_y, pred_var

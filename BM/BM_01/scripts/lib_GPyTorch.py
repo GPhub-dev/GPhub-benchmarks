@@ -44,7 +44,7 @@ class GPyTorchLibrary(PythonGPLibrary):
                 covar_x = self.covar_module(x)
                 return MultivariateNormal(mean_x, covar_x)  # type: ignore
 
-        noise_term = 1e-10
+        noise_term = 1e-8
         noise_constraint = gpytorch.constraints.GreaterThan(noise_term)  # type: ignore
 
         likelihood = gpytorch.likelihoods.GaussianLikelihood(

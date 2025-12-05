@@ -18,7 +18,7 @@ class SMTLibrary(PythonGPLibrary):
             theta_bounds=[1e-6, 1e6],
             n_start=30,
             hyper_opt="TNC",
-            nugget=1e-10,
+            nugget=1e-8,
             random_state=42,
             print_global=False,
         )
