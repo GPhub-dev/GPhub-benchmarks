@@ -20,7 +20,7 @@ class OpenTURNSLibrary(PythonGPLibrary):
         basis = ot.ConstantBasisFactory(train_x_ot.getDimension()).build()
         scale = [0.1] * train_x_ot.getDimension()
         amplitude = [0.1]
-        kernel = ot.SquaredExponential(scale, amplitude)
+        kernel = ot.MaternModel(scale, amplitude, 2.5)  # Matérn 5/2
 
         # Create Kriging algorithm
         self.gp_model = ot.KrigingAlgorithm(train_x_ot, train_y_ot, kernel, basis)

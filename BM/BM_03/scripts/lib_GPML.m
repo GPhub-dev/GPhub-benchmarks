@@ -5,14 +5,13 @@ switch ACTION
         % INITIALIZE GPML
         addpath('~/Documents/MATLAB/gpml-matlab-v4.2-2018-06-11')
         startup
-        meanfunc = []            % Constant mean function
-        covfunc = @covSEiso;             % Squared Exponential (RBF) kernel
+        meanfunc = @meanConst;           % Constant mean function
+        covfunc = {@covMaternard, 5};     % Matérn 5/2 with ARD (one length scale per dim)
         likfunc = @likGauss;             % Gaussian likelihood
         hyp = struct();
-        % hyp.mean = [0; 0];                   % No hyperparameters for the zero mean function
-        hyp.mean = [];                   % No hyperparameters for the zero mean function
-        hyp.cov = [0.25; 1];                % Initial guess for length scale and signal variance
-        hyp.lik = 1e-10;%log(0.01);             % Initial noise variance
+        hyp.mean = 0;                    % Initial value for constant mean function
+        hyp.cov = [0.25; 0.25; 1];       % ARD: 2 length scales + signal variance
+        hyp.lik = log(sqrt(1e-8));       % Initial noise variance (log of std dev)
     case 'train'
         % TRAINING
         hyp_opt = minimize(hyp, @gp, -200, @infGaussLik, meanfunc, covfunc, likfunc, train_x, train_y);

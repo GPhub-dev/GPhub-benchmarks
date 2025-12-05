@@ -13,12 +13,12 @@ class SMTLibrary(PythonGPLibrary):
         """Initialize the Python library for SMT."""
         self.gp_model = KRG(
             poly="constant",
-            corr="squar_exp",
-            theta0=[0.25],
+            corr="matern52",
+            theta0=[0.25, 0.25],  # ARD: one value per dimension
             theta_bounds=[1e-6, 1e6],
             n_start=30,
             hyper_opt="TNC",
-            nugget=1e-10,
+            nugget=1e-8,
             random_state=42,
             print_global=False,
         )

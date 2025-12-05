@@ -13,7 +13,7 @@ class EGOboxLibrary(PythonGPLibrary):
         """GPR model."""
         self.gp_model = egx.Gpx.builder(  # type: ignore
             regr_spec=egx.RegressionSpec.CONSTANT,  # type: ignore
-            corr_spec=egx.CorrelationSpec.SQUARED_EXPONENTIAL,  # type: ignore
+            corr_spec=egx.CorrelationSpec.MATERN52,  # type: ignore
         )
         self._train_x = train_x
         self._train_y = train_y

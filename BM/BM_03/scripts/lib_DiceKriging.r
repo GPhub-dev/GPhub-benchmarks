@@ -17,8 +17,8 @@ switch(ACTION,
       formula = ~1, # Constant trend
       design = train_x,
       response = train_y,
-      covtype = "gauss", # Squared exponential covariance
-      nugget = 1e-10,
+      covtype = "matern5_2", # Matérn 5/2 covariance
+      nugget = 1e-8,
       optim.method = "BFGS",
       control = list(trace = FALSE) # Suppress optimization output
     )
