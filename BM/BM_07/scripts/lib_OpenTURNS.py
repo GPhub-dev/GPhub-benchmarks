@@ -30,16 +30,27 @@ class OpenTURNSLibrary(PythonGPLibrary):
         train_y_ot = ot.Sample(train_y_norm.reshape(-1, 1))
 
         # Define basis and covariance model
-        basis = ot.ConstantBasisFactory(train_x_ot.getDimension()).build()
-        scale = [1.0] * train_x_ot.getDimension()  # ARD: 20 length scales for 20D
+        dim = train_x_ot.getDimension()
+        basis = ot.ConstantBasisFactory(dim).build()
+        scale = [1.0] * dim  # ARD: 20 length scales for 20D
         amplitude = [1.0]
         kernel = ot.MaternModel(scale, amplitude, 2.5)  # Matérn 5/2
 
         # Create Kriging algorithm
         self.gp_model = ot.KrigingAlgorithm(train_x_ot, train_y_ot, kernel, basis)
-        # Set a small noise for stability (nugget) - OT assumes noiseless by default
-        # Estimation of nugget in OT is non-trivial, setting small value for stability
-        self.gp_model.setNoise([1e-4] * train_x_ot.getSize())
+
+        # Configure optimization bounds for length scales
+        # Allow wide range for ARD to detect inert dimensions
+        lower_bound = [1e-2] * dim + [1e-4]  # length scales + amplitude
+        upper_bound = [1e3] * dim + [1e2]   # length scales + amplitude
+        scale_opt_bounds = ot.Interval(lower_bound, upper_bound)
+        self.gp_model.setOptimizationBounds(scale_opt_bounds)
+
+        # Use multi-start optimization for better hyperparameter estimation
+        solver = ot.MultiStart(ot.TNC(), ot.LowDiscrepancyExperiment(
+            ot.SobolSequence(), ot.ComposedDistribution([ot.Uniform(1e-2, 10.0)] * dim + [ot.Uniform(0.1, 10.0)]), 10
+        ).generate())
+        self.gp_model.setOptimizationAlgorithm(solver)
 
     def train(self) -> None:
         """Train the model."""
@@ -53,7 +64,7 @@ class OpenTURNSLibrary(PythonGPLibrary):
         kriging_metamodel = self.gp_model.getMetaModel()
         pred_y_norm = np.array(kriging_metamodel(test_x_ot))
         pred_var_norm = np.array(self.gp_model.getConditionalMarginalVariance(test_x_ot))
-        
+
         pred_y = pred_y_norm * self._y_std + self._y_mean
         pred_var = pred_var_norm * (self._y_std**2)
         return pred_y, pred_var

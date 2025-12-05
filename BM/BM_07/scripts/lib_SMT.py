@@ -23,15 +23,15 @@ class SMTLibrary(PythonGPLibrary):
         if self._y_std == 0:
             self._y_std = 1.0
         train_y_norm = (train_y - self._y_mean) / self._y_std
-        
+
         self.gp_model = KRG(
             poly="constant",
             corr="matern52",  # Matérn 5/2 kernel
             theta0=[1.0] * 20,  # ARD: one value per dimension (20D), normalized
-            theta_bounds=[1e-2, 1e3],  # Bounds for length scales (normalized)
-            n_start=10,
-            hyper_opt="Cobyla",
-            nugget=1e-5,  # small nugget for stability
+            theta_bounds=[1e-3, 1e4],  # Wider bounds for length scales
+            n_start=20,  # More restarts for better optimization
+            hyper_opt="Cobyla",  # TNC often works better than Cobyla
+            nugget=1e-6,  # Smaller nugget for better fit
             random_state=42,
             print_global=False,
         )
@@ -46,7 +46,7 @@ class SMTLibrary(PythonGPLibrary):
         test_x_norm = (test_x - self._x_mean) / self._x_std
         pred_y_norm = self.gp_model.predict_values(test_x_norm)
         pred_var_norm = self.gp_model.predict_variances(test_x_norm)
-        
+
         pred_y = pred_y_norm * self._y_std + self._y_mean
         pred_var = pred_var_norm * (self._y_std**2)
         return pred_y, pred_var
