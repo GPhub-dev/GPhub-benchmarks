@@ -1,4 +1,4 @@
-"""Benchmark - SMT library."""
+"""Composite plate - SMT (harmonized specification, see _scripts/README.md)."""
 
 from smt.surrogate_models import KRG
 import numpy as np
@@ -11,17 +11,24 @@ class SMTLibrary(PythonGPLibrary):
 
     def __init__(self, train_x: np.ndarray, train_y: np.ndarray) -> None:
         """Initialize the Python library for SMT."""
-        self.gp_model = KRG(
-            poly="constant",
-            corr="squar_exp",  # Gaussian/SE kernel
-            theta0=[0.1] * 8,  # ARD: one value per dimension (8D)
-            theta_bounds=[1e-2, 1e2],  # Tighter bounds for faster convergence
-            n_start=10,  # Reduced restarts for 8D (expensive)
-            hyper_opt="Cobyla",  # Cobyla is often more robust for higher dimensions
-            nugget=1e-8,  # small fixed nugget
-            random_state=42,
-            print_global=False,
-        )
+        m = train_x.shape[1]
+        l0 = 0.25 * np.sqrt(m)
+        # SMT: R = exp(-sum theta_k h_k^2) on inputs standardized to unit variance -> theta = var(x) / (2 l^2)
+        var_x = 1.0 / 12.0
+        options = {
+            "poly": "constant",
+            "corr": "squar_exp",
+            "theta0": [var_x / (2 * l0**2)] * m,
+            "theta_bounds": [var_x / (2 * 1e2**2), var_x / (2 * 1e-2**2)],  # l in [1e-2, 1e2]
+            "n_start": 1,  # one COBYLA run from theta0
+            "hyper_opt": "Cobyla",
+            "nugget": 1e-8,
+            "print_global": False,
+        }
+        try:
+            self.gp_model = KRG(seed=42, **options)  # SMT >= 2.10
+        except Exception:  # noqa: BLE001
+            self.gp_model = KRG(random_state=42, **options)
         self.gp_model.set_training_values(train_x, train_y)
 
     def train(self) -> None:

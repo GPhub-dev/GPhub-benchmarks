@@ -3,6 +3,7 @@
 switch ACTION
     case 'init'
         % INITIALIZE UQLab
+        addpath(fullfile('~/Documents/MATLAB/UQLab2.0', 'core'))
         uqlab;
         MetaOpts.Type = 'Metamodel';
         MetaOpts.MetaType = 'Kriging';

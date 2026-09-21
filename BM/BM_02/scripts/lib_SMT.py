@@ -19,7 +19,7 @@ class SMTLibrary(PythonGPLibrary):
             n_start=30,
             hyper_opt="TNC",
             nugget=1e-8,
-            random_state=42,
+            seed=42,  # named 'random_state' in the SMT releases of the first campaign
             print_global=False,
         )
         self.gp_model.set_training_values(train_x, train_y)

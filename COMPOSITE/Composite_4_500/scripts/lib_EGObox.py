@@ -1,4 +1,4 @@
-"""Benchmark - EGObox library."""
+"""Composite plate - egobox-gp (harmonized specification, see _scripts/README.md)."""
 
 import numpy as np
 import egobox as egx
@@ -11,9 +11,17 @@ class EGOboxLibrary(PythonGPLibrary):
 
     def __init__(self, train_x: np.ndarray, train_y: np.ndarray) -> None:
         """GPR model."""
+        m = train_x.shape[1]
+        l0 = 0.25 * np.sqrt(m)
+        # egobox-gp: R = exp(-sum theta_k h_k^2) on inputs standardized to unit variance -> theta = var(x) / (2 l^2)
+        var_x = 1.0 / 12.0
         self.gp_model = egx.Gpx.builder(  # type: ignore
             regr_spec=egx.RegressionSpec.CONSTANT,  # type: ignore
             corr_spec=egx.CorrelationSpec.SQUARED_EXPONENTIAL,  # type: ignore
+            theta_init=[var_x / (2 * l0**2)] * m,
+            theta_bounds=[[var_x / (2 * 1e2**2), var_x / (2 * 1e-2**2)]] * m,  # l in [1e-2, 1e2]
+            n_start=1,  # one COBYLA run from theta_init
+            seed=42,
         )
         self._train_x = train_x
         self._train_y = train_y

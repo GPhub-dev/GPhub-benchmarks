@@ -1,9 +1,8 @@
-"""Benchmark - SMT library."""
+"""Composite plate - SMT"""
 
-from smt.surrogate_models import KRG
 import numpy as np
-
 from gphubkit.launcher.executor import PythonGPLibrary
+from smt.surrogate_models import KRG
 
 
 class SMTLibrary(PythonGPLibrary):
@@ -11,17 +10,26 @@ class SMTLibrary(PythonGPLibrary):
 
     def __init__(self, train_x: np.ndarray, train_y: np.ndarray) -> None:
         """Initialize the Python library for SMT."""
-        self.gp_model = KRG(
-            poly="constant",
-            corr="squar_exp",
-            theta0=[0.25],
-            theta_bounds=[1e-6, 1e6],
-            n_start=30,
-            hyper_opt="TNC",
-            nugget=1e-10,
-            random_state=42,
-            print_global=False,
-        )
+        m = train_x.shape[1]
+        l0 = 0.25 * np.sqrt(m)
+        var_x = 1.0 / 12.0
+        options = {
+            "poly": "constant",
+            "corr": "squar_exp",
+            "theta0": [var_x / (2 * l0**2)] * m,
+            "theta_bounds": [
+                var_x / (2 * 1e2**2),
+                var_x / (2 * 1e-2**2),
+            ],
+            "n_start": 1,
+            "hyper_opt": "Cobyla",
+            "nugget": 1e-8,
+            "print_global": False,
+        }
+        try:
+            self.gp_model = KRG(seed=42, **options)
+        except Exception:  # noqa: BLE001
+            self.gp_model = KRG(random_state=42, **options)
         self.gp_model.set_training_values(train_x, train_y)
 
     def train(self) -> None:

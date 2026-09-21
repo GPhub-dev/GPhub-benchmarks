@@ -19,7 +19,7 @@ class SMTLibrary(PythonGPLibrary):
             n_start=10,  # Reduced restarts for 8D (expensive)
             hyper_opt="Cobyla",  # More robust for higher dimensions
             nugget=1e-8,  # small nugget
-            random_state=42,
+            seed=42,  # named 'random_state' in the SMT releases of the first campaign
             print_global=False,
         )
         self.gp_model.set_training_values(train_x, train_y)

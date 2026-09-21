@@ -32,7 +32,7 @@ class SMTLibrary(PythonGPLibrary):
             n_start=20,  # More restarts for better optimization
             hyper_opt="Cobyla",  # TNC often works better than Cobyla
             nugget=1e-6,  # Smaller nugget for better fit
-            random_state=42,
+            seed=42,  # named 'random_state' in the SMT releases of the first campaign
             print_global=False,
         )
         self.gp_model.set_training_values(train_x_norm, train_y_norm)

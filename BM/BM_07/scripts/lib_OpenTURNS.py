@@ -41,14 +41,15 @@ class OpenTURNSLibrary(PythonGPLibrary):
 
         # Configure optimization bounds for length scales
         # Allow wide range for ARD to detect inert dimensions
-        lower_bound = [1e-2] * dim + [1e-4]  # length scales + amplitude
-        upper_bound = [1e3] * dim + [1e2]   # length scales + amplitude
-        scale_opt_bounds = ot.Interval(lower_bound, upper_bound)
+        # (the amplitude is estimated analytically: bounds and starting points apply to the length scales only)
+        scale_opt_bounds = ot.Interval([1e-2] * dim, [1e3] * dim)
         self.gp_model.setOptimizationBounds(scale_opt_bounds)
 
         # Use multi-start optimization for better hyperparameter estimation
+        ot.RandomGenerator.SetSeed(42)
+        joint = getattr(ot, "JointDistribution", None) or ot.ComposedDistribution  # renamed in OpenTURNS 1.23
         solver = ot.MultiStart(ot.TNC(), ot.LowDiscrepancyExperiment(
-            ot.SobolSequence(), ot.ComposedDistribution([ot.Uniform(1e-2, 10.0)] * dim + [ot.Uniform(0.1, 10.0)]), 10
+            ot.SobolSequence(), joint([ot.Uniform(1e-2, 10.0)] * dim), 10
         ).generate())
         self.gp_model.setOptimizationAlgorithm(solver)
 
