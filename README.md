@@ -4,6 +4,8 @@ Scripts, data, and stored results of the benchmarks of the paper *"GPhub: A comp
 libraries"* (Section 4), run with [GPhub-kit](https://github.com/GPhub-dev/GPhub-kit).
 
 The benchmarks showcase the toolkit; they are neither a comprehensive comparison nor a ranking of the libraries.
+**Browse the results: [RESULTS.md](RESULTS.md)** (one page per case, with the metrics and every plot).
+
 They cover 10 libraries: `DACE`, `egobox-gp`, `GPflow`, `GPML`, `GPstuff`, `GPyTorch`, `OpenTURNS`, `SMT`, `tinygp`,
 and `UQLab`. Contributions that add a library, or improve a script, are welcome.
 
@@ -17,9 +19,11 @@ and `UQLab`. Contributions that add a library, or improve a script, are welcome.
 | `<case>/scripts/lib_<library>.*` | One script per library (Python, MATLAB) |
 | `<case>/results/storage/` | Stored predictions, predictive variances, times, and peak memory (Parquet) |
 | `<case>/results/img/`, `report.log` | Plots and report of the toolkit (radar charts, cross-validation, density, residuals, prediction) |
+| `<case>/RESULTS.md` | The metrics table and every plot of the case on one page |
 | `_scripts/` | Generic composite-plate scripts and their harmonized specification (`_scripts/README.md`) |
 | `run_campaign.py` | Runs the cases library by library and logs every attempt in `campaign_log.jsonl` |
-| `postprocess_all.py` | Regenerates the plots and reports of every case |
+| `postprocess_all.py` | Regenerates the plots and reports of every case, then the `RESULTS.md` pages |
+| `make_results_md.py` | Writes `<case>/RESULTS.md` (metrics table and every plot of the case) and the index [`RESULTS.md`](RESULTS.md) |
 
 The scripts of the analytical functions use the native optimizer settings of each library; those of the composite
 plate implement one common specification.
@@ -48,4 +52,4 @@ $PY postprocess_all.py
 $PY postprocess_all.py --cases BM_01,Composite_2_100
 ```
 
-BM cases are written as PNG and PDF, COMPOSITE cases as PNG. Plotting is not timed and runs in parallel.
+BM cases are written as PNG and PDF, COMPOSITE cases as PNG. Plotting is not timed and runs in parallel. The `RESULTS.md` pages are rewritten at the end; `$PY make_results_md.py` rewrites them alone.

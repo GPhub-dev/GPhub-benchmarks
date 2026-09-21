@@ -120,6 +120,10 @@ def main() -> None:
                 flush=True,
             )
     print(f"{len(todo)} cases, {failed} failed")
+    from make_results_md import write_all
+
+    n_cases, n_img = write_all([case.name for case in todo])
+    print(f"RESULTS.md written for {n_cases} cases ({n_img} images)")
     raise SystemExit(1 if failed else 0)
 
 
