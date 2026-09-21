@@ -1,4 +1,4 @@
-# GPhub-kit-benchmarks
+# GPhub-benchmarks
 
 Scripts, data, and stored results of the benchmarks of the paper *"GPhub: A comprehensive guide to Gaussian Process
 libraries"* (Section 4), run with [GPhub-kit](https://github.com/GPhub-dev/GPhub-kit).
